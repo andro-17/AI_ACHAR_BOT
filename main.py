@@ -3,10 +3,10 @@ from flask import Flask, request
 import telebot
 from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
 
-TOKEN = '784789060:AAH4_pDDS-7U1hA_LNZrXW0fv4w3L9GWiLs'  # توکنت
+TOKEN = '7847389060:AAH4_pDDS-7U1hA_LNZrXW0fv4w3L9GWiLs'  # توکنت
 
 bot = telebot.TeleBot(TOKEN)
-app = Flask(__name__)
+application = Flask(__name__)  # <<<===== اینجا application گذاشتم
 
 # دستور /start
 @bot.message_handler(commands=['start'])
@@ -24,28 +24,25 @@ def start(message):
 @bot.callback_query_handler(func=lambda call: True)
 def callback(call):
     if call.data == "joke":
-        bot.send_message(call.message.chat.id, "جوک باحال:\n\nیکی گفت به خدا سوگند!\nخدا گفت قبول نیست، شاهد نداری 😂")
+        bot.send_message(call.message.chat.id, "جوک باحال:\n\nیکی رفت دکتر گفت دکتر من فراموشی گرفتم!\nدکتر گفت کی؟ 😂")
     elif call.data == "special":
         bot.send_message(call.message.chat.id, "😍 محتوای ویژه فقط برای اعضای vip!\nبه ادمین پیام بده 👆")
     elif call.data == "grok":
         bot.send_message(call.message.chat.id, "به زودی سوالتو به گروک واقعی می‌فرستم و جواب می‌گیرم 🤖")
 
-# webhook برای دریافت آپدیت‌ها
-@app.route('/' + TOKEN, methods=['POST'])
+# webhook
+@application.route('/' + TOKEN, methods=['POST'])
 def get_update():
     if request.headers.get('content-type') == 'application/json':
         json_string = request.get_data().decode('utf-8')
         update = telebot.types.Update.de_json(json_string)
         bot.process_new_updates([update])
         return 'ok', 200
-    else:
-        return 'bad request', 403
+    return 'bad request', 403
 
-# صفحه اصلی (برای تست زنده بودن)
-@app.route('/')
+@application.route('/')
 def index():
     return "ربات زنده است! 😎"
 
-# اجرای سرور
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=os.environ.get('PORT', 5000))
+    application.run(host='0.0.0.0', port=os.environ.get('PORT', 5000))
