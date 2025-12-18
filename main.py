@@ -22,24 +22,22 @@ def start(message):
 @bot.callback_query_handler(func=lambda call: True)
 def callback(call):
     if call.data == "joke":
-        bot.send_message(call.message.chat.id, "جوک:\n\nیکی گفت به خدا قسم!\nخدا گفت قبول نیست، شاهد نداری 😂")
+        bot.send_message(call.message.chat.id, "جوک:\n\nیکی رفت دکتر گفت دکتر من فراموشی گرفتم!\nدکتر گفت از کی؟ 😂")
     elif call.data == "special":
-        bot.send_message(call.message.chat.id, "😍 محتوای ویژه فقط vip!\nبه ادمین پیام بده 👆")
+        bot.send_message(call.message.chat.id, "😍 محتوای ویژه فقط برای vip!\nبه ادمین پیام بده 👆")
     elif call.data == "grok":
         bot.send_message(call.message.chat.id, "به زودی گروک جواب می‌ده 🤖")
 
 @app.route('/' + TOKEN, methods=['POST'])
 def webhook():
-    if request.headers.get('content-type') == 'application/json':
-        try:
-            json_string = request.get_json(force=True)
-            update = telebot.types.Update.de_json(json_string)
-            bot.process_new_updates([update])
-            return 'ok', 200
-        except Exception as e:
-            print(e)  # برای Log در Render
-            return 'error', 400
-    abort(403)
+    try:
+        update = telebot.types.Update.de_json(request.stream.read().decode('utf-8'))
+        bot.process_new_updates([update])
+        print("Update received and processed:", update)  # برای Log
+        return 'ok', 200
+    except Exception as e:
+        print("Error processing update:", str(e))  # ارورها Log می‌شن
+        return 'error', 400
 
 @app.route('/')
 def index():
