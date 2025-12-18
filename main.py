@@ -22,7 +22,7 @@ def start(message):
 @bot.callback_query_handler(func=lambda call: True)
 def callback(call):
     if call.data == "joke":
-        bot.send_message(call.message.chat.id, "جوک:\n\nیکی رفت دکتر گفت دکتر من فراموشی گرفتم!\nدکتر گفت از کی؟ 😂")
+        bot.send_message(call.message.chat.id, "جوک باحال:\n\nیه روز یکی رفت دکتر گفت: دکتر من فکر می‌کنم نامرئی‌ام!\nدکتر گفت: بعدی! 😂")
     elif call.data == "special":
         bot.send_message(call.message.chat.id, "😍 محتوای ویژه فقط برای vip!\nبه ادمین پیام بده 👆")
     elif call.data == "grok":
@@ -30,14 +30,16 @@ def callback(call):
 
 @app.route('/' + TOKEN, methods=['POST'])
 def webhook():
-    try:
-        update = telebot.types.Update.de_json(request.stream.read().decode('utf-8'))
-        bot.process_new_updates([update])
-        print("Update received and processed:", update)  # برای Log
-        return 'ok', 200
-    except Exception as e:
-        print("Error processing update:", str(e))  # ارورها Log می‌شن
-        return 'error', 400
+    if request.headers.get('content-type') == 'application/json':
+        try:
+            update = telebot.types.Update.de_json(request.get_json())
+            bot.process_new_updates([update])
+            print("Update processed successfully:", update.update_id)  # Log موفقیت
+            return 'ok', 200
+        except Exception as e:
+            print("Error:", str(e))  # Log ارور
+            return 'error', 400
+    abort(403)
 
 @app.route('/')
 def index():
