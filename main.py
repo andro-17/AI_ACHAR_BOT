@@ -1,5 +1,5 @@
 import os
-from flask import Flask, request
+from flask import Flask, request, abort
 import telebot
 from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
 
@@ -22,23 +22,28 @@ def start(message):
 @bot.callback_query_handler(func=lambda call: True)
 def callback(call):
     if call.data == "joke":
-        bot.send_message(call.message.chat.id, "جوک:\n\nیه روز یکی رفت بانک گفت پول می‌خوام!\nگفتن حساب داری؟ گفت نه، گفتن برو حساب باز کن 😂")
+        bot.send_message(call.message.chat.id, "جوک:\n\nیکی گفت به خدا قسم!\nخدا گفت قبول نیست، شاهد نداری 😂")
     elif call.data == "special":
-        bot.send_message(call.message.chat.id, "😍 محتوای ویژه فقط برای vip!\nبه ادمین پیام بده 👆")
+        bot.send_message(call.message.chat.id, "😍 محتوای ویژه فقط vip!\nبه ادمین پیام بده 👆")
     elif call.data == "grok":
         bot.send_message(call.message.chat.id, "به زودی گروک جواب می‌ده 🤖")
 
 @app.route('/' + TOKEN, methods=['POST'])
 def webhook():
-    json_string = request.get_data().decode('utf-8')
-    update = telebot.types.Update.de_json(json_string)
-    bot.process_new_updates([update])
-    return "ok", 200
+    if request.headers.get('content-type') == 'application/json':
+        try:
+            json_string = request.get_json(force=True)
+            update = telebot.types.Update.de_json(json_string)
+            bot.process_new_updates([update])
+            return 'ok', 200
+        except Exception as e:
+            print(e)  # برای Log در Render
+            return 'error', 400
+    abort(403)
 
 @app.route('/')
 def index():
     return "ربات زنده است! 😎"
 
-# مهم: برای Render
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=os.environ.get('PORT', 5000))
